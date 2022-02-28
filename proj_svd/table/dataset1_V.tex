@@ -1,0 +1,14 @@
+\begin{table}\label{V1}
+\centering
+\begin{tabular}{|c|c|c|c|c|c|c|}
+
+\hline
+\multirow{2}{*}{ Algorithm} &\multicolumn{3}{c|}{Linear time} &\multicolumn{3}{c|}{Prototype randomized}\\\cline{2-7}
+ &$c=2k$ &$c=10k$ &$c=50k$ &$q=0$ &$q=1$ &$q=2$\\\hline
+$k=5$ & $1.30e-02$ & $1.26e-02$ & $9.01e-03$ & $1.18e-02$ & $1.04e-02$ & $6.21e-03$\\\hline
+$k=10$ & $1.09e-02$ & $1.11e-02$ & $7.71e-03$ & $1.80e-15$ & $3.88e-15$ & $4.73e-15$\\\hline
+$k=15$ & $1.10e-02$ & $1.03e-02$ & $5.99e-03$ & $1.47e-15$ & $1.15e-15$ & $1.93e-15$\\\hline
+$k=20$ & $1.44e-15$ & $2.72e-15$ & $1.28e-15$ & $3.52e-15$ & $2.20e-15$ & $2.48e-15$\\\hline
+\end{tabular}
+\caption{Relative $\|\cdot\|_F$ error of $V$ for Linear time SVD and Prototype randomized SVD with different parameters and $k$ on dataset 1}
+\end{table}

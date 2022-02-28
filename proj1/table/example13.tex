@@ -1,0 +1,14 @@
+\begin{table}
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+
+\hline
+\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.001}\\\cline{2-6}
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+Mosek & $1.19e+00$ & $1.20e-01$ & $5.77e-05$ & $1.56e-01$ & $1.20e+02$\\\hline
+Proximal (ISTA) & $3.23e-01$ & $1.74e-01$ & $6.52e-05$ & $7.94e-01$ & $1.74e+02$\\\hline
+Proximal (FISTA) & $3.49e-01$ & $1.20e-01$ & $5.90e-05$ & $2.36e-01$ & $1.20e+02$\\\hline
+ADMM & $2.09e-01$ & $1.20e-01$ & $5.91e-05$ & $2.50e-01$ & $1.20e+02$\\\hline
+\end{tabular}
+\caption{Numerical result on example 1 with different $\mu$\label{example1}}
+\end{table}

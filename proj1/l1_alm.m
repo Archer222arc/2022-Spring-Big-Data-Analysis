@@ -1,16 +1,15 @@
 function [x, out] = l1_alm(x0,A,b,mu,opts)
-%--------------------------------------------------------------------------
 % Solving L1 minimization problem directly via Augmented Lagrangian method,
 % which is equivalent to Bregman method on this problem
 %
 % The program aims to solve the L1 minimization problem of the form
 %
-%        min_x \mu ||x||_1  +  ||Ax-b||_inf
+%        min_x \mu ||x||_1  +  ||Ax-b||_1
 %
 % Augmented Lagrangian method solves the following subproblem by ISTA/FISTA
 % in each iteration
 %
-% min_{x,y} \mu ||x||_1  +  ||y||_inf  +  \lambda^T (Ax-b-y)  +  t/2||Ax-b-y||_2^2,
+% min_{x,y} \mu ||x||_1  +  ||y||_1  +  \lambda^T (Ax-b-y)  +  t/2||Ax-b-y||_2^2,
 %
 % and updates Lagrange multiplier according to the soultion of subproblem.
 % We also apply a continuum method for faster convergence.
@@ -30,9 +29,9 @@ function [x, out] = l1_alm(x0,A,b,mu,opts)
 %               maxiter: maximal iteration
 %               maxsubiter: maximal iteration of subproblem
 %               ctm: whether use continuation method
-%               ctmtol: stop criteria of ctm
-%               ctmsta: initial mu of ctm
-%               ctmsto: when to stop usage of ctm
+%               tol_ctm: stop criteria of ctm
+%               mu_ctm: initial mu of ctm
+%               converge_ctm: when to stop usage of ctm
 %               print: whether print information
 %               itprint: print frequency
 %
@@ -40,7 +39,7 @@ function [x, out] = l1_alm(x0,A,b,mu,opts)
 %         x --- The optimal point founded by algorithm
 %       out --- Miscellaneous information during the computation
 %
-
+%% initialization
 
 if ~isfield(opts,'tol');              opts.tol = 1e-10; end
 if ~isfield(opts,'subtol');           opts.subtol = 1e-8; end
@@ -51,33 +50,24 @@ if ~isfield(opts,'t');                opts.t = 1e-3; end
 if ~isfield(opts,'maxiter');          opts.maxiter = 5e2; end
 if ~isfield(opts,'maxsubiter');         opts.maxsubiter = 4e3; end
 if ~isfield(opts,'ctm');              opts.ctm = 0; end
-if ~isfield(opts,'ctmtol');           opts.ctmtol = opts.tol*10; end
-if ~isfield(opts,'ctmsta');           opts.ctmsta = mu*1e2; end
-if ~isfield(opts,'ctmsto');           opts.ctmsto = 1e-3; end
+if ~isfield(opts,'tol_ctm');           opts.tol_ctm = opts.tol*10; end
+if ~isfield(opts,'mu_ctm');           opts.mu_ctm = mu*1e2; end
+if ~isfield(opts,'converge_ctm');           opts.converge_ctm = 1e-3; end
 if ~isfield(opts,'print');            opts.print = 1; end
 if ~isfield(opts,'itprint');          opts.itprint = 1; end
 if ~isfield(opts,'verbose');          opts.verbose = 1; end
 
-%--------------------------------------------------------------------------
-% initialize
-
 tol = opts.tol;            subtol = opts.subtol;      FISTA = opts.FISTA;
 warm_step = opts.warm_step;  step = opts.step;          t = opts.t;
 maxiter = opts.maxiter;    itprint = opts.itprint;    pri = opts.print;
-maxsubiter = opts.maxsubiter;  ctmtol = opts.ctmtol;      ctm = opts.ctm;
-ctmsta = opts.ctmsta;      ctmsto = opts.ctmsto;
+maxsubiter = opts.maxsubiter;  tol_ctm = opts.tol_ctm;      ctm = opts.ctm;
+mu_ctm = opts.mu_ctm;      converge_ctm = opts.converge_ctm;
 verbose = opts.verbose;
-
-%--------------------------------------------------------------------------
-%  setup print format
 
 stra1 = ['%4s','%13s','%12s','%14s','%9s','\n'];
 str_head = sprintf(stra1, ...
     'iter','obj','violation','|x-x_k|_2','subiter');
 str_num = '%4d  %+5.4e  %+5.4e  %+5.4e   %6d\n';
-
-%--------------------------------------------------------------------------
-% initial preparation
 
 [m,n] = size(A);
 iter = 0;
@@ -93,25 +83,23 @@ if(warm_step)
 end
 tic;
 
-%--------------------------------------------------------------------------
-% start computation
+%% main loop
 
 if(pri)
     fprintf('Augmented Lagrangian solver started \n');
 end
-while(res>tol&&iter<maxiter)
+while(res > tol && iter < maxiter)
     iter = iter+1;
     subtotiter = 0;
     
-    %----------------------------------------------------------------------
     % solve subproblem by (accelerated) proximal gradient method
     
-    if(ctm&&res>ctmsto)
-        mu_now = ctmsta;
+    if(ctm&&res>converge_ctm)
+        mu_now = mu_ctm;
     else
         mu_now = mu;
     end
-    while(true)
+    while 1
         subiter = 0;
         subres = inf;
         xsubold = x;
@@ -120,7 +108,7 @@ while(res>tol&&iter<maxiter)
         y_F = y;
         tF = 1;
         while(subiter<maxsubiter)
-            if(mu_now~=mu&&subres<ctmtol)
+            if(mu_now~=mu&&subres<tol_ctm)
                 break
             elseif(subres<subtol)
                 break;
@@ -131,14 +119,17 @@ while(res>tol&&iter<maxiter)
                 z = A * x - b - y;
                 xtmp = x - step * (A' * (lambda + t*z));
                 x = max(xtmp-mu_now*step*xone,0)+min(xtmp+mu_now*step*xone,0);
+               
                 ytmp = y+step * (lambda-t*z);
-                y = ytmp-l1_proj(ytmp,step);
+                y = sign(ytmp).* max(abs(ytmp)-step,0);
+%                 y = ytmp-l1_proj(ytmp,step);
             else
                 z = A*x_F-b-y_F;
                 xtmp = x_F-step * (A' * (lambda+t*z));
                 x = max(xtmp - mu_now * step * xone,0) + min(xtmp + mu_now * step * xone,0);
                 ytmp = y_F+step * (lambda - t * z);
-                y = ytmp-l1_proj(ytmp,step);
+                y = sign(ytmp).* max(abs(ytmp)-step,0);
+%                 y = ytmp-l1_proj(ytmp,step);
                 tFn = (1 + (1 + 4 * tF^2)^0.5)/2;
                 x_F = x + (tF - 1)/tFn * (x - xsubold);
                 y_F = y + (tF - 1)/tFn * (y - ysubold);
@@ -155,14 +146,12 @@ while(res>tol&&iter<maxiter)
         end
     end
     
-    %----------------------------------------------------------------------
     % update Lagrange multiplier
     
     lambda = lambda+t*(A*x-b-y);
     gap = abs(mu*norm(x,1)+norm(y,inf)+b'*lambda)/(abs(mu*norm(x,1)+norm(y,inf))+abs(b'*lambda));
     res = gap+norm(z,2)/norm(b,2);
     
-    %----------------------------------------------------------------------
     % print information
     
     if(pri&&mod(iter,itprint)==0) && verbose == 2
@@ -174,8 +163,7 @@ while(res>tol&&iter<maxiter)
     end
 end
 
-%--------------------------------------------------------------------------
-% output
+%% output
 
 
 out.time = toc;

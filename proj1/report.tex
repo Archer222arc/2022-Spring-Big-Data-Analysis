@@ -19,12 +19,13 @@
 \author{Ruicheng Ao 1900012179}
 \begin{document}
 \maketitle
-\section{$\ell_1$ minimization}
+\tableofcontents
+\section{$l_1$ minimization}
 \subsection{Problem settings}
 In this section, we consider the following optimization problem
 \begin{equation}\label{prob1}
 \begin{array}{cc}
-\min_x & \mu\|x\|_1+\|Ax-b\|_\infty,
+\min_x & \mu\|x\|_1+\|Ax-b\|_1,
 \end{array}
 \end{equation}
 where $A\in\R^{m\times n}$ and $b\in\R^m$ are given.
@@ -32,7 +33,7 @@ where $A\in\R^{m\times n}$ and $b\in\R^m$ are given.
 Problem \eqref{prob1} can be reformulated into a constrained problem by introducing constraint $y=Ax-b$:
 \begin{equation}\label{prob2}
 \begin{array}{cc}
-\min_{x,y} & \mu\|x\|_1+\|y\|_\infty \\
+\min_{x,y} & \mu\|x\|_1+\|y\|_1 \\
 \st & y=Ax-b 
 \end{array}
 \end{equation}
@@ -40,7 +41,7 @@ with its dual problem given by
 \begin{equation}\label{prob3}
 \begin{array}{cc}
 	\max_{\lambda} &-b^\top\lambda \\
-\st & \|\lambda\|_1\le1,\|A^\top\lambda\|_\infty\le1
+\st & \|\lambda\|_1\le1,\|A^\top\lambda\|_1\le1
 \end{array}
 \end{equation}
 \subsection{Agumented Lagragian method}
@@ -48,7 +49,7 @@ In the past, penalty function methods had been prevailed by directly adding a co
 
 The augmented Lagrangian method, however, relieves such difficulty by introducing the Lagrangian multipliers combined with quadratic penalty function. To speak more specifically, by applying such technique, an augmented Lagrangian function of primal problem \eqref{prob1} is of the form
 \begin{equation}\label{al}
-L(x,y,\lambda,\tau) = \mu\|x\|_1+\|y\|_\infty +\lambda^\top(Ax-b-y) +\frac{\tau}{2}\|Ax-b-y\|_2^2.
+L(x,y,\lambda,\tau) = \mu\|x\|_1+\|y\|_1 +\lambda^\top(Ax-b-y) +\frac{\tau}{2}\|Ax-b-y\|_2^2.
 \end{equation}
 One of the most obvious advantage of this kind of method is implied in that, throughout the optimization process, there is no necessity for the augmented Lagrangian method to set gradually $tau$ to infinity in order to get the optimal point, which avoids ill-conditioned subproblems. Algorithm \ref{alm} shows a general framework of augmented Lagrangian method.
 \begin{algorithm}[H]
@@ -77,13 +78,13 @@ It should be mentioned that, in our form of constraint $y=Ax-b$, one can show th
 \STATE{Initialize $x^0,y^0,f^0$}
 \WHILE{Not converge}
 \STATE{Update $f^{k+1}=f^k-(Ax^k-y-b)$}
-\STATE{Solve $(x^{k+1},y^{k+1})=\argmin_{x,y}H(x,y,f,\tau)=\mu\|x\|_1+\|y\|_\infty+\frac{\tau}{2}\|Ax-y-f^k\|_2^2$)}
+\STATE{Solve $(x^{k+1},y^{k+1})=\argmin_{x,y}H(x,y,f,\tau)=\mu\|x\|_1+\|y\|1+\frac{\tau}{2}\|Ax-y-f^k\|_2^2$)}
 \STATE{$k=k+1$}
 \ENDWHILE
 \RETURN{$x^k,y^k$}
 \end{algorithmic}
 \end{algorithm}
- We apply the fast iterative shrinkage-thresholding algorithm (FISTA) \cite{beck2009fast} for solving the subproblem in Algorithm \ref{alm}, which is illustrated in Algorithm \ref{fista}. We split the augmented Lagrangian function into two parts in order to use FISTA, i.e., $f(x,y) = \lambda^\top(Ax-b-y)+\frac{\tau}{2}\|Ax-b-y\|_2^2,g(x,y)=\mu\|x\|_1+\|y\|_\infty$. The proximal operator of $tg(x.y),t>0$ composes of two parts. One is $\prox_{t\|\cdot\|_1}(x)$, which can be expressed explicitly as
+ We apply the fast iterative shrinkage-thresholding algorithm (FISTA) \cite{beck2009fast} for solving the subproblem in Algorithm \ref{alm}, which is illustrated in Algorithm \ref{fista}. We split the augmented Lagrangian function into two parts in order to use FISTA, i.e., $f(x,y) = \lambda^\top(Ax-b-y)+\frac{\tau}{2}\|Ax-b-y\|_2^2,g(x,y)=\mu\|x\|_1+\|y\|_1$. The proximal operator of $tg(x.y),t>0$ composes of two parts. One is $\prox_{t\|\cdot\|_1}(x)$, which can be expressed explicitly as
  \begin{equation}
 \prox_{t\|\cdot\|_1}(x)_i = \begin{cases}
 x_i+t,&x_i <-t, \\
@@ -91,21 +92,22 @@ x_i+t,&x_i <-t, \\
 x_i-t, & x_i > t,
 \end{cases}
  \end{equation}
-The other part $\prox_{t\|\cdot\|_\infty}(y)$, however, is more difficult to compute directly. Nevertheless, it can be obtained by applying Moreau decomposition \cite{hiriart1989moreau}, i.e., 
-\begin{equation}\label{moreau}
-	y = \prox_h(y)+\prox_{h^*}(y),
-\end{equation}
-where $h$ is any convex function and $h^*(y)=\sup_z(z^\top y-h(z))$. Note that the conjugate of $\|\cdot\|_\infty$ has the form of $\sup_z(z^\top y-t\|z\|_\infty) = \begin{cases}
-0, &\|y\|_1\le 1,\\ 
-+\infty, & \|y\|_1>1,
-\end{cases}$ we have $\prox_{t\|\cdot\|_\infty}(y) = y-\prox_{1_{\|x\|_1\le t}}(y)= y-\proj_{\|\cdot\|_1\le t}(y)$. The projection of $y$ to $l_1$ ball of radius $t$ can be obtained by solving the following equations
-\begin{equation}\label{proj}
-\proj(y)_i = \sign(y_i)(|y_i|-\lambda)_+=\begin{cases}
- 0, & |y_i| \le \lambda,\\
- \sign(y_i)(|y_i|-\lambda), &|y_i|>\lambda,
-\end{cases}
-\end{equation}
-where $\lambda>=0 $ is the minimal nonnegative number satisfying $\sum_{i=1}^m (|y_i|-\lambda)_+ \le t$. This subproblem can be solved using bisection method in time of $\Ocal (m\log m)$. 
+where the computational complexity of each iteration is $\Ocal(mn)$.
+% The other part $\prox_{t\|\cdot\|1}(y)$, however, is more difficult to compute directly. Nevertheless, it can be obtained by applying Moreau decomposition \cite{hiriart1989moreau}, i.e., 
+% \begin{equation}\label{moreau}
+% 	y = \prox_h(y)+\prox_{h^*}(y),
+% \end{equation}
+% where $h$ is any convex function and $h^*(y)=\sup_z(z^\top y-h(z))$. Note that the conjugate of $\|\cdot\|_\infty$ has the form of $\sup_z(z^\top y-t\|z\|_\infty) = \begin{cases}
+% 0, &\|y\|_1\le 1,\\ 
+% +\infty, & \|y\|_1>1,
+% \end{cases}$ we have $\prox_{t\|\cdot\|_\infty}(y) = y-\prox_{1_{\|x\|_1\le t}}(y)= y-\proj_{\|\cdot\|_1\le t}(y)$. The projection of $y$ to $l_1$ ball of radius $t$ can be obtained by solving the following equations
+% \begin{equation}\label{proj}
+% \proj(y)_i = \sign(y_i)(|y_i|-\lambda)_+=\begin{cases}
+%  0, & |y_i| \le \lambda,\\
+%  \sign(y_i)(|y_i|-\lambda), &|y_i|>\lambda,
+% \end{cases}
+% \end{equation}
+% where $\lambda>=0 $ is the minimal nonnegative number satisfying $\sum_{i=1}^m (|y_i|-\lambda)_+ \le t$. This subproblem can be solved using bisection method in time of $\Ocal (m\log m)$. 
 
 The following theorem in \cite{beck2009fast} demonstrates the general convergence of FISTA:
 \begin{theorem}
@@ -114,14 +116,14 @@ Let $\{x^k\}$ be the iterates of FISTA, then for any $k\ge 1$, $F(x) =f(x)+g(x)$
 F(x^k)-F(x^*) \le \frac{2L\|x^0-x^*\|_2^2}{(k+1)^2},\forall x^*\text{ optimal}.
 \end{equation}
 \end{theorem}
-Thus the computation complexity for finding an $\epsilon-$optimal point is $\Ocal(\frac{nm\log m L^\frac{1}{2}}{\epsilon^\frac{1}{2}})$ with the cost per iteration $\Ocal(nm\log m)$.
+Thus the computation complexity for finding an $\epsilon-$optimal point is $\Ocal(\frac{mnL^\frac{1}{2}}{\epsilon^\frac{1}{2}})$ with the cost per iteration $\Ocal(mn)$.
  \begin{algorithm}[H]
 \caption{Fast iterative shrinkage-thresholding algorithm}
 \begin{algorithmic}[1]\label{fista}
 \STATE{Given $f,g$, initial point $x^0$, Lipschitz coefficient $L$ of $\grad f$}
 \STATE{Set $y^1 = x^1,t^1 = 1$}
 \WHILE{Not converge}
-\STATE{Solve $x^k = \argmin_x \prox_{g(x)/L}(y^k-\frac{1}{L}\grad f(y^k)$}
+\STATE{Solve $x^k = \argmin_x \prox_{g(x)/L}(y^k-\frac{1}{L}\grad f(y^k))$}
 \STATE{Update $t^{k+1}=\frac{1+\sqrt{1+4(t^{(k)})^2}}{2}$}
 \STATE{Update $y^{k+1}=x^k+\frac{t^k-1}{t^k+1}(x^k-x^{k-1})$}
 \STATE{$k=k+1$}
@@ -134,7 +136,7 @@ To the end of this section, we illustrate the practical implementation of augmen
 \caption{Augmented Lagrangian method}
 \begin{algorithmic}[1]\label{practical alm}
 \STATE{Given tolerance $tol,\eps^0$, penalty parameter $\tau^0$, initial point $(x^0,y^0)$, $\lambda^0$}
-\WHILE{$|\mu\|x\|_1+\|y\|_\infty+b^\top\lambda|+\|Ax-b-y\|_2^2 > tol$}
+\WHILE{$|\mu\|x\|_1+\|y\|_1+b^\top\lambda|+\|Ax-b-y\|_2^2 > tol$}
 \STATE{Using FISTA to obtain $\epsilon^k-$optimal solution $(x^k,y^k)$ of $L(x,y,\lambda^k,\tau^k)$}
 \STATE{Update Lagrangian multiplier $\lambda^{k+1}=\lambda^k+\tau^k(Ax^k-b-y^k)$}
 \STATE{Choose initial point for FISTA of the next subproblem and updata tolerance$\epsilon^{k+1}\le\epsilon^k$, penalty parameter $\tau^{k+1}\ge\tau^k$.}
@@ -146,7 +148,7 @@ To the end of this section, we illustrate the practical implementation of augmen
 \subsection{Alternating direction method of multipliers}
 In this section, we demonstrate alternating direction metod of multipliers (ADMM) for solving primal problem \eqref{prob2}. We rewrite the augmented Lagrangian function as follows
 \begin{equation}\label{eq:al}
-	L(x,y,\lambda,\tau)=\mu\|x\|_1+\|y\|_\infty+\lambda^\top(Ax-b-y)+\frac{\tau}{2}\|Ax-b-y\|_2^2.
+	L(x,y,\lambda,\tau)=\mu\|x\|_1+\|y\|_1+\lambda^\top(Ax-b-y)+\frac{\tau}{2}\|Ax-b-y\|_2^2.
 \end{equation}
 In each iteration of ALM, $(x^k,y^k)$ are updated simultaneously, which leads to costly computation. To address this problem, ADMM modifies the iteration by updating $x^k,y^k,\lambda^k$ separately. We demonstrate the framework of ADMM in Algorithm \ref{alg:admm}. The convergence of ADMM is established in \cite{glowinski1989augmented}.
 \begin{algorithm}[H]
@@ -161,7 +163,11 @@ In each iteration of ALM, $(x^k,y^k)$ are updated simultaneously, which leads to
 \RETURN{$x^k,y^k$}
 \end{algorithmic}
 \end{algorithm}
-However, in some situations, solving the subproblem $x^{k+1}=\argmin_xL(x,y^k,\lambda^k,\tau)$ is intractable. \cite{yang2011alternating} proposed a linearized ADMM scheme demonstrated in Algorithm \ref{alg:linear admm}. Each iteration can be proceed quickly by applying proximal operators as mentioned before. Also, since there is no difficulty to directly compute $y^{k+1}$ with the help of proximal operators, we can update $y^k$ by just solving the subproblem. The following theorem in \cite{yang2011alternating} estabishes the convergence of linearized ADMM.
+However, in some situations, solving the subproblem $x^{k+1}=\argmin_xL(x,y^k,\lambda^k,\tau)$ is intractable. \cite{yang2011alternating} proposed a linearized ADMM scheme demonstrated in Algorithm \ref{alg:linear admm}. Each iteration can be proceed quickly by applying proximal operators as mentioned before. Also, since there is no difficulty to directly compute $y^{k+1}$ with the help of proximal operators, we can update $y^k$ by just solving the subproblem and get
+\begin{equation}
+	y^{k+1} = \prox_{\|\cdot\|_1/\tau}(Ax^{k+1}-b+\lambda^k/\tau).
+\end{equation}
+ The following theorem in \cite{yang2011alternating} establishes the convergence of linearized ADMM.
 \begin{theorem}
 Suppose the stepsize $\alpha,\gamma$ satisfy $\alpha\lambda_{\max}+\gamma<2$, where $\lambda_{\max}$ denotes the largest eigenvalue of $A^\top A$. Then for primal problem $\mu\|x\|_1+\|y\|_2^2$, the iterates generated by linearized ADMM converges globally to the optimal points.
 \end{theorem}
@@ -218,35 +224,194 @@ The numerical results are displayed in Table \ref{table1} , we do not list the n
 	\hline
 \multirow{2}{*}{Algorithm }& \multicolumn{6}{c|}{$(m,n)=(128,256)$} \\\cline{2-7}
  &  time & optvalue & violation & optgap & error to mosek& $\|x\|_1 $\\\hline
-Mosek & 9.60e-01 & 1.76e-07 &- & - & - & 2.33e+01\\\hline
-Gurobi & 1.06e+00 & 2.33e-09 & - & - & 3.74e-08 & 2.33e+01\\\hline
-ALM with ISTA & 4.18e-02 & 4.74e-09 & 7.75e-11 & 1.51e-11 &3.65e-08 & 2.33e+01 \\\hline
-ALM with FISTA & 2.34e-02 & 3.51e-09 & 5.64e-11 & 2.00e-11 &3.65e-08 & 2.33e+01 \\\hline
-ADMM & 7.25e-03 & 2.01e-10 & 1.68e-10 & 3.04e-13&3.65e-08 & 2.33e+01  \\\hline
+ Mosek & 1.16e+00 & 1.76e-07 &- & - & - & 2.33e+01\\\hline
+ Gurobi & 9.00e-01 & 2.33e-09 & - & - & 3.74e-08 & 2.33e+01\\\hline
+ ALM with ISTA & 3.98e-02 & 4.74e-09 & 7.75e-11 & 1.51e-11 &3.65e-08 & 2.33e+01 \\\hline
+ ALM with FISTA & 4.66e-02 & 3.51e-09 & 5.64e-11 & 2.00e-11 &3.65e-08 & 2.33e+01 \\\hline
+ ADMM & 4.28e-02 & 2.76e-09 & 2.31e-09 & 4.38e-12&3.65e-08 & 2.33e+01  \\\hline
  \multirow{2}{*}{Algorithm }& \multicolumn{6}{c|}{$(m,n)=(256,512)$} \\\cline{2-7}
  &  time & optvalue & violation & optgap & error to mosek& $\|x\|_1 $\\\hline
-Mosek & 1.12e+00 & 3.10e-10 &- & - & - & 4.39e+01\\\hline
-Gurobi & 1.47e+00 & 7.53e-09 & - & - & 6.32e-10 & 4.39e+01\\\hline
-ALM with ISTA & 2.51e-01 & 2.23e-09 & 4.80e-11 & 3.45e-11 &9.81e-11 & 4.39e+01 \\\hline
-ALM with FISTA & 7.61e-02 & 2.96e-09 & 6.12e-11 & 3.18e-11 &1.18e-10 & 4.39e+01 \\\hline
-ADMM & 2.00e-02 & 6.09e-11 & 1.42e-10 & 1.32e-13&4.98e-11 & 4.39e+01  \\\hline
- \multirow{2}{*}{Algorithm }& \multicolumn{6}{c|}{$(m,n)=(512,1024)$} \\\cline{2-7}
+ Mosek & 2.11e+00 & 3.10e-10 &- & - & - & 4.39e+01\\\hline
+ Gurobi & 1.51e+00 & 7.53e-09 & - & - & 6.32e-10 & 4.39e+01\\\hline
+ ALM with ISTA & 1.03e-01 & 1.94e-09 & 4.10e-11 & 3.98e-11 &5.65e-11 & 4.39e+01 \\\hline
+ ALM with FISTA & 1.08e-01 & 2.96e-09 & 6.12e-11 & 3.18e-11 &1.18e-10 & 4.39e+01 \\\hline
+ ADMM & 3.80e-02 & 1.06e-10 & 2.46e-10 & 7.12e-13&4.86e-11 & 4.39e+01  \\\hline
  &  time & optvalue & violation & optgap & error to mosek& $\|x\|_1 $\\\hline
-Mosek & 2.27e+00 & 5.19e-08 &- & - & - & 8.25e+01\\\hline
-Gurobi & 4.29e+00 & 2.46e-09 & - & - & 1.99e-08 & 8.25e+01\\\hline
-ALM with ISTA & 2.81e+00 & 3.77e-09 & 8.25e-11 & 4.17e-11 &6.31e-09 & 8.25e+01 \\\hline
-ALM with FISTA & 3.60e-01 & 3.76e-09 & 8.14e-11 & 2.41e-12 &6.41e-09 & 8.25e+01 \\\hline
-ADMM & 8.84e-02 & 1.80e-10 & 1.07e-09 & 4.65e-12&6.35e-09 & 8.25e+01  \\\hline
+ Mosek & 2.81e+00 & 5.19e-08 &- & - & - & 8.25e+01\\\hline
+ Gurobi & 4.79e+00 & 2.46e-09 & - & - & 1.99e-08 & 8.25e+01\\\hline
+ ALM with ISTA & 2.31e-01 & 3.44e-09 & 8.85e-11 & 3.83e-12 &6.30e-09 & 8.25e+01 \\\hline
+ ALM with FISTA & 1.78e-01 & 3.76e-09 & 8.14e-11 & 2.39e-12 &6.41e-09 & 8.25e+01 \\\hline
+ ADMM & 1.26e-01 & 1.81e-10 & 1.08e-09 & 4.79e-12&6.35e-09 & 8.25e+01  \\\hline
  \multirow{2}{*}{Algorithm }& \multicolumn{6}{c|}{$(m,n)=(1024,2048)$} \\\cline{2-7}
  &  time & optvalue & violation & optgap & error to mosek& $\|x\|_1 $\\\hline
-Mosek & 7.50e+00 & 1.00e-08 &- & - & - & 1.69e+02\\\hline
-Gurobi & 5.76e+01 & 7.11e-07 & - & - & 1.06e-07 & 1.69e+02\\\hline
-ALM with ISTA & 1.28e+02 & 1.29e-09 & 4.48e-11 & 7.04e-12 &1.24e-08 & 1.69e+02 \\\hline
-ALM with FISTA & 2.84e+00 & 2.42e-09 & 6.89e-11 & 1.48e-11 &1.24e-08 & 1.69e+02 \\\hline
-ADMM & 1.36e+00 & 8.03e-12 & 1.36e-10 & 7.61e-15&1.24e-08 & 1.69e+02  \\\hline
+ Mosek & 8.87e+00 & 1.00e-08 &- & - & - & 1.69e+02\\\hline
+ Gurobi & 7.15e+01 & 7.11e-07 & - & - & 1.06e-07 & 1.69e+02\\\hline
+ ALM with ISTA & 1.90e+00 & 5.46e-10 & 1.89e-11 & 2.93e-11 &1.24e-08 & 1.69e+02 \\\hline
+ ALM with FISTA & 1.36e+00 & 2.26e-09 & 8.18e-11 & 6.48e-12 &1.24e-08 & 1.69e+02 \\\hline
+ ADMM & 1.20e+00 & 7.95e-12 & 1.34e-10 & 1.07e-12&1.24e-08 & 1.69e+02  \\\hline
 \end{tabular}
-\caption{Numerical results for $L_1$ minimization. Violation means relative constraint violation defined by $\frac{\|Ax-y-b\|_2}{\|b\|_2}$. CPU time is recorded. Optvaule represents $\frac{|f(x,y)-f(x^*,y^*)}{|f(x^*,y^*)|}$, where $f(x,y)=\mu\|x\|_1+\|y\|_\infty$. Error to mosek denotes the relative $l_2$ difference with the solution of mosek.\label{table1}}
+\caption{Numerical results for $L_1$ minimization. Violation means relative constraint violation defined by $\frac{\|Ax-y-b\|_2}{\|b\|_2}$. CPU time is recorded. Optvaule represents $\frac{|f(x,y)-f(x^*,y^*)}{|f(x^*,y^*)|}$, where $f(x,y)=\mu\|x\|_1+\|y\|_1$. Error to mosek denotes the relative $l_2$ difference with the solution of mosek.\label{table1}}
 \end{table}
+\section{Low-rank recovery}
+\subsection{Problem settings}
+In this section, we consider the following problem
+\begin{equation}\label{lowrank}
+	\begin{array}{cc}
+		\min_{X\in\R^{m\times n}}& \mu\|X\|_*+\sum_{(i,j)\in\Omega}(X_{ij}-M_{ij})^2,
+	\end{array}
+\end{equation}
+where $\|X\|_*=\sum_{i}\sigma_i(X)$ denotes the nuclear norm (sum of singular values). The projection operator is defined as $$[P_\Omega(X)]_{ij}=\begin{cases}
+	B_{ij}&(i,j)\in\Omega \\ 
+	0 & (i,j)\notin\Omega 
+\end{cases}
+$$
+Then the loss function can be written as
+\begin{equation}\label{lowrank2}
+	f(X)=\underbrace{\left\|P_{\Omega}(M)-P_{\Omega}(X)\right\|_{F}^{2}}_{g(X)}+\underbrace{\mu\|X\|_*}_{h(X)},
+\end{equation}
+which is splitted into two parts so that we can apply proximal gradient method or convert \eqref{lowrank2} into a constrained problem by introducing additional variable such that
+\begin{equation}\label{prob4}
+	\begin{array}{cc}
+		\min_{X,Y}& f(X,Y) = \underbrace{\|Y\|_F^2}_g +\underbrace{\mu\|X\|_*}_h\\
+		\st & P_\Omega(X)-P_\Omega(M) = Y
+	\end{array}
+\end{equation}
+\subsection{Proximal gradient method}
+The problem form in \eqref{lowrank2} naturally splits the objective funciton into two part, namely, $g(X)$ is smooth and convex in $X$. Therefore, proximal radient method can be implemented to solve such problem. 
+
+For $g$, the gradient is simply 
+\begin{equation}
+	\nabla g(X) = 2(P_\Omega(X)-P_\Omega(M)).
+\end{equation}
+To find the explicit solution to proximal point 
+\begin{equation}
+	\prox_{th}(X) = \argmin_{Z} \frac{1}{2t}\|Z-X\|_F^2+\mu\|Z\|_*.
+\end{equation}
+Fortunately, in our previous assignment, we have already known its expression
+\begin{equation}
+	\prox_{th}(X) = S_{\mu t}(X),
+\end{equation}
+where $S_{\mu t}$ is the shrinkage operator defined by $S_\lambda(X) = U\Sigma_\lambda V^\top$, $X=U\Sigma V^\top$ is the SVD and $\Sigma$ is diagonal with $(\Sigma)_{ii}=\max\{\Sigma_{ii}-\lambda,0\}$. Then vanilla proximal gradient or Algorithm \ref{fista} can be implemented to solve the problem.
+\subsection{Alternating direction method of multipliers}
+In this section, we demonstrate alternating direction method of multipliers (ADMM) for solving primal problem \eqref{prob4}. We rewrite the augmented Lagrandian function as follows 
+\begin{equation}\label{alm:lowrank}
+	L(X,Y,\Lambda,\tau) = \mu\|X\|_*+\|Y\|_F^2+\langle \Lambda,P_\Omega(X-M)-Y\rangle +\frac{\tau}{2} \|P_\Omega(X-M)-Y\|_F^2.
+\end{equation}
+The framework of ADMM in such matrix form is given in Algorithm \ref{alg:admm2}.
+\begin{algorithm}[H]
+	\caption{Alternating direction method of multipliers}
+	\begin{algorithmic}[1]\label{alg:admm2}
+	\STATE{Initialize $X^0,Y^0,\lambda^0,\gamma\in(0,\frac{\sqrt{5}+1}{2})$}
+	\WHILE{Not converge}
+	\STATE{Solve $X^{k+1}=\argmin_XL(X,Y^k,\Lambda^k,\tau)$}
+	\STATE{Solve $Y^{k+1}=\argmin_YL(X^{k+1},Y,\Lambda^k,\tau)$}
+	\STATE{Update Lagrangian multiplier $\Lambda^{k+1}=\Lambda^k+\gamma\tau(P_\Omega(X^{k+1})-P_\Omega(M)-Y^{k+1})$}
+	\ENDWHILE
+	\RETURN{$X^k,Y^k$}
+	\end{algorithmic}
+	\end{algorithm}
+However, in this matrix completion task, solving the subproblem $X^{k+1}=\argmin_XL(X,Y^k,\Lambda^k,\tau)$ is intractable by many times of SVD. \cite{yang2011alternating} proposed a linearized ADMM scheme demonstrated in Algorithm \ref{alg:linear admm}. Each iteration can be proceed quickly by applying proximal operators as mentioned before. Also, since there is no difficulty to directly compute $Y^{k+1}$:
+\begin{equation}
+	Y^{k+1} = (2+\tau)^{-1}(\tau P_\Omega(X-M)+\Lambda).
+\end{equation}
+By applying proximal operator of nuclear norm induced before, each updata can be computed quickly.
+\begin{algorithm}[H]
+	\caption{Linearized ADMM}
+	\begin{algorithmic}[1]\label{alg:linear admm2}
+	\STATE{Initialize $X^0,Y^0,\lambda^0,\gamma\in(0,\frac{\sqrt{5}+1}{2})$, stepsize $\alpha$}
+	\WHILE{Not converge}
+	\STATE{Solve $X^{k+1}=\argmin_{X}\mu\|X\|_*+\langle  (P_\Omega(\Lambda+\tau(X^k-M-Y)),X\rangle+\frac{1}{2\alpha}\|X-X^k\|_2^2$}
+	\STATE{Solve $Y^{k+1}=\argmin_YL(X^{k+1},Y,\lambda^k,\tau)$}
+	\STATE{Update Lagrangian multiplier $\Lambda^{k+1}=\Lambda^k+\gamma\tau(P_\Omega(X^{k+1})-P_\Omega(M)-Y^{k+1})$}
+	\ENDWHILE
+	\RETURN{$x^k,y^k$}
+	\end{algorithmic}
+	\end{algorithm}
+\subsection{Numerical results}
+We implement the numerical experiments on all datasets provided by the project document with $\mu=0.1,0.01,0.001$. Mosek, Proximal gradient method (ISTA), Fast Proximal gradient method (FISTA) and linearized ADMM on primal problem are compared. We apply continuum strategy with a start $\mu=1000$ each experiment. Step size is chosen to be $0.1$ for proximal gradient and $\frac{0.1}{\tau}$ for ADMM, while $\tau = 1$. The toleration is chosen to be $1e-8$. Comparison involves the CPU time, the optimal value, the relative error of $\|P_\Omega(X)-P_\Omega(M)\|_F/\|P_\Omega(M)\|_F$ and the recovery error $\|X-A\|_F/\|A\|$, where $A$ is the primitive matrix. The results are listed in Table.
+\begin{table}
+	\centering
+	\begin{tabular}{|c|c|c|c|c|c|}
+	
+	\hline
+	\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.1}\\\cline{2-6}
+	 &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+	Mosek & $2.40e+00$ & $1.19e+01$ & $5.43e-03$ & $1.58e-01$ & $1.19e+02$\\\hline
+	Proximal (ISTA) & $3.36e-01$ & $1.39e+01$ & $5.81e-03$ & $6.25e-01$ & $1.37e+02$\\\hline
+	Proximal (FISTA) & $2.81e-01$ & $1.21e+01$ & $5.44e-03$ & $1.61e-01$ & $1.19e+02$\\\hline
+	ADMM & $2.34e-01$ & $1.19e+01$ & $5.47e-03$ & $1.73e-01$ & $1.19e+02$\\\hline
+	\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.01}\\\cline{2-6}
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+	Mosek & $1.28e+00$ & $1.20e+00$ & $5.76e-04$ & $1.56e-01$ & $1.20e+02$\\\hline
+	Proximal (ISTA) & $3.62e-01$ & $1.67e+00$ & $6.37e-04$ & $7.76e-01$ & $1.67e+02$\\\hline
+	Proximal (FISTA) & $3.13e-01$ & $1.20e+00$ & $5.71e-04$ & $1.39e-01$ & $1.20e+02$\\\hline
+	ADMM & $3.79e-01$ & $1.20e+00$ & $5.79e-04$ & $2.02e-01$ & $1.20e+02$\\\hline
+	\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.001}\\\cline{2-6}
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+Mosek & $1.19e+00$ & $1.20e-01$ & $5.77e-05$ & $1.56e-01$ & $1.20e+02$\\\hline
+Proximal (ISTA) & $3.23e-01$ & $1.74e-01$ & $6.52e-05$ & $7.94e-01$ & $1.74e+02$\\\hline
+Proximal (FISTA) & $2.89e-01$ & $1.20e-01$ & $5.90e-05$ & $2.36e-01$ & $1.20e+02$\\\hline
+ADMM & $2.09e-01$ & $1.20e-01$ & $5.91e-05$ & $2.50e-01$ & $1.20e+02$\\\hline
+   \end{tabular}
+   \caption{Numerical result on example 1 with different $\mu$\label{example1}}
+   \end{table}
+   	
+   \begin{table}
+	\centering
+	\begin{tabular}{|c|c|c|c|c|c|}
+	
+	\hline
+	\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.1}\\\cline{2-6}
+	 &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+	Mosek & $9.70e+00$ & $1.99e+01$ & $1.86e-03$ & $2.33e-03$ & $1.99e+02$\\\hline
+	Proximal (ISTA) & $2.04e+00$ & $3.41e+01$ & $4.64e-03$ & $6.14e-01$ & $3.36e+02$\\\hline
+	Proximal (FISTA) & $1.80e+00$ & $2.00e+01$ & $1.86e-03$ & $2.33e-03$ & $1.99e+02$\\\hline
+	ADMM & $7.61e-01$ & $1.99e+01$ & $1.86e-03$ & $2.33e-03$ & $1.99e+02$\\\hline
+\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.01}\\\cline{2-6}
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+Mosek & $1.11e+01$ & $2.00e+00$ & $1.86e-04$ & $2.33e-04$ & $2.00e+02$\\\hline
+Proximal (ISTA) & $2.02e+00$ & $4.49e+00$ & $5.11e-04$ & $7.94e-01$ & $4.49e+02$\\\hline
+Proximal (FISTA) & $1.89e+00$ & $2.00e+00$ & $2.84e-04$ & $7.54e-03$ & $2.00e+02$\\\hline
+ADMM & $8.40e-01$ & $2.00e+00$ & $1.86e-04$ & $2.33e-04$ & $2.00e+02$\\\hline
+\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.001}\\\cline{2-6}
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+Mosek & $1.31e+01$ & $2.00e-01$ & $1.86e-05$ & $2.37e-05$ & $2.00e+02$\\\hline
+Proximal (ISTA) & $4.76e+00$ & $4.72e-01$ & $5.25e-05$ & $8.13e-01$ & $4.72e+02$\\\hline
+Proximal (FISTA) & $3.63e+00$ & $2.06e-01$ & $4.10e-05$ & $3.73e-02$ & $2.06e+02$\\\hline
+ADMM & $2.89e+00$ & $2.00e-01$ & $2.99e-05$ & $1.49e-02$ & $2.00e+02$\\\hline
+	\end{tabular}
+	\caption{Numerical result on example 2 with different $\mu$\label{example2}}
+	\end{table}
+	
+	\begin{table}
+		\centering
+		\begin{tabular}{|c|c|c|c|c|c|}
+		
+		\hline
+		\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.1}\\\cline{2-6}
+		 &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+		Mosek & $7.81e+02$ & $2.05e+02$ & $6.82e-04$ & $8.66e-04$ & $2.05e+03$\\\hline
+		Proximal (ISTA) & $1.07e+01$ & $3.52e+02$ & $1.39e-03$ & $6.36e-01$ & $3.51e+03$\\\hline
+		Proximal (FISTA) & $1.51e+01$ & $2.05e+02$ & $6.82e-04$ & $8.66e-04$ & $2.05e+03$\\\hline
+		ADMM & $4.08e+00$ & $2.05e+02$ & $6.82e-04$ & $8.66e-04$ & $2.05e+03$\\\hline
+		\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$}\\\cline{2-6}
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+		Mosek & $8.59e+02$ & $2.05e+01$ & $6.83e-05$ & $8.72e-05$ & $2.05e+03$\\\hline
+Proximal (ISTA) & $2.33e+01$ & $2.05e+01$ & $7.62e-05$ & $8.75e-04$ & $2.05e+03$\\\hline
+Proximal (FISTA) & $1.25e+01$ & $3.76e+01$ & $1.41e-04$ & $6.92e-01$ & $3.76e+03$\\\hline
+ADMM & $3.29e+00$ & $2.05e+01$ & $6.82e-05$ & $8.67e-05$ & $2.05e+03$\\\hline
+\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.001}\\\cline{2-6}
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+Mosek & $1.04e+03$ & $2.05e+00$ & $6.83e-06$ & $9.87e-06$ & $2.05e+03$\\\hline
+Proximal (ISTA) & $8.50e+00$ & $4.13e+00$ & $1.44e-05$ & $7.45e-01$ & $4.13e+03$\\\hline
+Proximal (FISTA) & $1.38e+01$ & $2.42e+00$ & $1.45e-05$ & $2.51e-01$ & $2.42e+03$\\\hline
+ADMM & $5.23e+00$ & $2.42e+00$ & $1.32e-05$ & $2.57e-01$ & $2.42e+03$\\\hline
+		\end{tabular}
+		\caption{Numerical result on example 3 with different $\mu$\label{example3}}
+		\end{table}
+		
+We observe that among all these algorithms, ADMM performs the best, both in time and the recovery, while all of our proposed algorithms outperform the baseline Mosek many times except ISTA, which only finds an approximate solution in a very short time. Note that sometimes FISTA costs more time than ISTA, which is because ISTA gets its maximal number of iterations thus leaves an inaccurate solution. The results is consistent with our previous knowledge that ADMM truly has its superiorty, while FISTA has good acceleration and pertains the quality of solution compared with ISTA.
+	
 %\nocite{*}
 \bibliographystyle{plain}  
 \bibliography{ref}

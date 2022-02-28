@@ -1,5 +1,4 @@
 function py = l1_proj(y,t)
-%------------------------------------------------------------------------
 % find the projection of y to l_1 ball with bisection
 % Input:
 %       y --- the initial point
@@ -7,6 +6,7 @@ function py = l1_proj(y,t)
 % Output:
 %       py--- the projection
 % judge if in l1 box
+
 if norm(y,1) <= t
     py = y;
     return

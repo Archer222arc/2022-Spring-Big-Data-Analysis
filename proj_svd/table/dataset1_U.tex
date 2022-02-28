@@ -1,0 +1,14 @@
+\begin{table}[H]\label{U1}
+\centering
+\begin{tabular}{|c|c|c|c|c|c|c|}
+
+\hline
+\multirow{2}{*}{ Algorithm} &\multicolumn{3}{c|}{Linear time} &\multicolumn{3}{c|}{Prototype randomized}\\\cline{2-7}
+ &$c=2k$ &$c=10k$ &$c=50k$ &$q=0$ &$q=1$ &$q=2$\\\hline
+$k=5$ & $1.31e-02$ & $1.27e-02$ & $9.22e-03$ & $1.19e-02$ & $1.05e-02$ & $6.48e-03$\\\hline
+$k=10$ & $1.11e-02$ & $1.12e-02$ & $7.89e-03$ & $1.79e-15$ & $3.87e-15$ & $4.74e-15$\\\hline
+$k=15$ & $1.11e-02$ & $1.04e-02$ & $6.10e-03$ & $1.46e-15$ & $1.14e-15$ & $1.93e-15$\\\hline
+$k=20$ & $1.44e-15$ & $2.72e-15$ & $1.27e-15$ & $3.52e-15$ & $2.20e-15$ & $2.48e-15$\\\hline
+\end{tabular}
+\caption{Relative $\|\cdot\|_F$ error of $U$ for Linear time SVD and Prototype randomized SVD with different parameters and $k$ on dataset 1}
+\end{table}

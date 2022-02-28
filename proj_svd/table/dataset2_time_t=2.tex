@@ -1,0 +1,14 @@
+\begin{table}\label{time22}
+\centering
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+
+\hline
+\multirow{2}{*}{ Algorithm} &\multicolumn{1}{c|}{baseline} &\multicolumn{3}{c|}{Linear time} &\multicolumn{3}{c|}{Prototype randomized}\\\cline{2-8}
+ &- &$c=2k$ &$c=10k$ &$c=50k$ &$q=0$ &$q=1$ &$q=2$\\\hline
+$k=5$ & $1.16e+00$ & $1.16e+00$ & $1.13e+00$ & $2.38e-01$ & $7.66e-01$ & $7.72e-01$ & $1.95e-01$\\\hline
+$k=10$ & $1.27e+00$ & $1.21e+00$ & $1.25e+00$ & $3.81e-01$ & $9.73e-01$ & $9.70e-01$ & $3.96e-01$\\\hline
+$k=15$ & $1.35e+00$ & $1.41e+00$ & $1.52e+00$ & $5.21e-01$ & $1.11e+00$ & $1.11e+00$ & $5.49e-01$\\\hline
+$k=20$ & $1.37e+00$ & $1.54e+00$ & $1.71e+00$ & $6.81e-01$ & $1.35e+00$ & $1.22e+00$ & $6.84e-01$\\\hline
+\end{tabular}
+\caption{CPU time for Linear time SVD and Prototype randomized SVD with different parameters and $k$}
+\end{table}

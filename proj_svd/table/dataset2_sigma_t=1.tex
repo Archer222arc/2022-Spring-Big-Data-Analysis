@@ -1,0 +1,14 @@
+\begin{table}\label{sigma21}
+\centering
+\begin{tabular}{|c|c|c|c|c|c|c|}
+
+\hline
+\multirow{2}{*}{ Algorithm} &\multicolumn{3}{c|}{Linear time} &\multicolumn{3}{c|}{Prototype randomized}\\\cline{2-7}
+ &$c=2k$ &$c=10k$ &$c=50k$ &$q=0$ &$q=1$ &$q=2$\\\hline
+$k=5$ & $2.44e-02$ & $1.95e-03$ & $6.47e-04$ & $1.25e-04$ & $1.27e-08$ & $6.11e-14$\\\hline
+$k=10$ & $2.64e-04$ & $1.31e-04$ & $2.20e-05$ & $5.00e-05$ & $1.56e-14$ & $5.59e-16$\\\hline
+$k=15$ & $4.13e-04$ & $6.66e-05$ & $1.29e-05$ & $2.24e-04$ & $1.06e-09$ & $2.12e-07$\\\hline
+$k=20$ & $3.57e-04$ & $2.19e-04$ & $1.06e-04$ & $3.03e-04$ & $2.37e-05$ & $2.31e-04$\\\hline
+\end{tabular}
+\caption{Relative error of eigenvalue for Linear time SVD and Prototype randomized SVD with different parameters and $k$ on dataset 2 with distribution 1}
+\end{table}
