@@ -43,7 +43,7 @@ if ~isfield(opts,'mu_ctm');           opts.mu_ctm = 10/mu; end
 if ~isfield(opts,'print');            opts.print = 1; end
 if ~isfield(opts,'itprint');          opts.itprint = 1; end
 if ~isfield(opts,'verbose');          opts.verbose = 1; end
-
+if opts.FISTA == 0;                    opts.maxiter = 5000; end
 tol = opts.tol;            FISTA = opts.FISTA;
 warm_step = opts.warm_step;  step0 = opts.step;          
 maxiter = opts.maxiter;    itprint = opts.itprint;    pri = opts.print;

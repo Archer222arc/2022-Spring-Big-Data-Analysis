@@ -82,8 +82,8 @@ end
 
 out.time = toc;
 out.iter = iter;
-out.f = fval;
-out.err = err_out;
+out.err_train = fval;
+out.err_test = err_out;
 out.g = gval;
 
 end

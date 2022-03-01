@@ -35,27 +35,29 @@ if ~isfield(opts,'maxiter');          opts.maxiter = 3e6; end
 if ~isfield(opts,'bsize');            opts.bsize = 1e2; end
 if ~isfield(opts,'print');            opts.print = 1; end
 if ~isfield(opts,'verbose');          opts.verbose = 1e4; end
+if ~isfield(opts,'decay_rate');       opts.decay_rate = 0.8; end
 
 
 gamma = opts.gamma;        maxiter = opts.maxiter;    bsize = opts.bsize;
 verbose = opts.verbose;    pri = opts.print;          lr = opts.step0;
 submaxiter = opts.submaxiter;
 f = func.f;     g = func.g;     testfunc = func.testfunc;   fsub = func.fsub;
+n = func.n;     decay_rate = opts.decay_rate;
 
 stra1 = ['%9s','%14s','%15s','%15s','\n'];
 str_head = sprintf(stra1, ...
-    'iter','f','error','g norm');
+    'iter','train loss','test loss','g norm');
 str_num = '%8d    %+5.4e    %+5.4e    %+5.4e\n';
 
 m = length(x0);
 iter = 0;
 mu = 0.95;
 x = x0;
-t = randperm(m,bsize);
+t = randperm(n,bsize);
 
 % t = 1:bsize;
-fval = f(x);
-err_out = testfunc(x);
+err_train = f(x);
+err_test = testfunc(x);
 nu = g(x,1:n);
 gval = norm(g(x,1:n));
 tic;
@@ -96,21 +98,23 @@ while(iter<maxiter)
         if(iter==1||mod(iter-verbose,verbose*10)==0)
             fprintf("%s",str_head);
         end
-        fobj = f(x);
-        err = testfunc(x);
+        step = step*decay_rate;
+        e_train = f(x);
+        e_test = testfunc(x);
+%         gnorm = norm(g(x,1:n)-func.lambda*sign(x));
         fgrad = norm(g(x,1:n)-func.lambda*sign(x));
 %         step = step * 0.5;
-        fval = [fval,fobj]; 
-        err_out = [err_out,err];
+        err_train = [err_train,e_train]; 
+        err_test = [err_test,e_test];
         gval = [gval,fgrad];
-        fprintf(str_num,iter,fobj,err,fgrad);
+        fprintf(str_num,iter,e_train,e_test,fgrad);
     end
 end
 
 out.time = toc;
 out.iter = iter;
-out.f = fval;
-out.err = err_out;
+out.err_test = err_test;
+out.err_train = err_train;
 out.g = gval;
 
 end

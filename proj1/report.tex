@@ -328,26 +328,26 @@ By applying proximal operator of nuclear norm induced before, each updata can be
 	\end{algorithmic}
 	\end{algorithm}
 \subsection{Numerical results}
-We implement the numerical experiments on all datasets provided by the project document with $\mu=0.1,0.01,0.001$. Mosek, Proximal gradient method (ISTA), Fast Proximal gradient method (FISTA) and linearized ADMM on primal problem are compared. We apply continuum strategy with a start $\mu=1000$ each experiment. Step size is chosen to be $0.1$ for proximal gradient and $\frac{0.1}{\tau}$ for ADMM, while $\tau = 1$. The toleration is chosen to be $1e-8$. Comparison involves the CPU time, the optimal value, the relative error of $\|P_\Omega(X)-P_\Omega(M)\|_F/\|P_\Omega(M)\|_F$ and the recovery error $\|X-A\|_F/\|A\|$, where $A$ is the primitive matrix. The results are listed in Table.
-\begin{table}
+We implement the numerical experiments on the first three datasets provided by the project document with $\mu=0.1,0.01,0.001$. Mosek, Proximal gradient method (ISTA), Fast Proximal gradient method (FISTA) and linearized ADMM on primal problem are compared. We apply continuum strategy with a start $\mu=1000$ each experiment. Step size is chosen to be $0.1$ for proximal gradient and $\frac{0.1}{\tau}$ for ADMM, while $\tau = 1$. The toleration is chosen to be $1e-8$. Comparison involves the CPU time, the optimal value, the relative error of $\|P_\Omega(X)-P_\Omega(M)\|_F/\|P_\Omega(M)\|_F$ and the recovery error $\|X-A\|_F/\|A\|$, where $A$ is the primitive matrix. The results are listed in Table \ref{example1}-\ref{example3}.
+\begin{table}[H]
 	\centering
 	\begin{tabular}{|c|c|c|c|c|c|}
 	
 	\hline
 	\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.1}\\\cline{2-6}
-	 &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+	 &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with $A$ in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
 	Mosek & $2.40e+00$ & $1.19e+01$ & $5.43e-03$ & $1.58e-01$ & $1.19e+02$\\\hline
 	Proximal (ISTA) & $3.36e-01$ & $1.39e+01$ & $5.81e-03$ & $6.25e-01$ & $1.37e+02$\\\hline
 	Proximal (FISTA) & $2.81e-01$ & $1.21e+01$ & $5.44e-03$ & $1.61e-01$ & $1.19e+02$\\\hline
 	ADMM & $2.34e-01$ & $1.19e+01$ & $5.47e-03$ & $1.73e-01$ & $1.19e+02$\\\hline
 	\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.01}\\\cline{2-6}
- &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with $A$ in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
 	Mosek & $1.28e+00$ & $1.20e+00$ & $5.76e-04$ & $1.56e-01$ & $1.20e+02$\\\hline
 	Proximal (ISTA) & $3.62e-01$ & $1.67e+00$ & $6.37e-04$ & $7.76e-01$ & $1.67e+02$\\\hline
 	Proximal (FISTA) & $3.13e-01$ & $1.20e+00$ & $5.71e-04$ & $1.39e-01$ & $1.20e+02$\\\hline
 	ADMM & $3.79e-01$ & $1.20e+00$ & $5.79e-04$ & $2.02e-01$ & $1.20e+02$\\\hline
 	\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.001}\\\cline{2-6}
- &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with $A$ in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
 Mosek & $1.19e+00$ & $1.20e-01$ & $5.77e-05$ & $1.56e-01$ & $1.20e+02$\\\hline
 Proximal (ISTA) & $3.23e-01$ & $1.74e-01$ & $6.52e-05$ & $7.94e-01$ & $1.74e+02$\\\hline
 Proximal (FISTA) & $2.89e-01$ & $1.20e-01$ & $5.90e-05$ & $2.36e-01$ & $1.20e+02$\\\hline
@@ -356,25 +356,25 @@ ADMM & $2.09e-01$ & $1.20e-01$ & $5.91e-05$ & $2.50e-01$ & $1.20e+02$\\\hline
    \caption{Numerical result on example 1 with different $\mu$\label{example1}}
    \end{table}
    	
-   \begin{table}
+   \begin{table}[H]
 	\centering
 	\begin{tabular}{|c|c|c|c|c|c|}
 	
 	\hline
 	\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.1}\\\cline{2-6}
-	 &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+	 &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with $A$ in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
 	Mosek & $9.70e+00$ & $1.99e+01$ & $1.86e-03$ & $2.33e-03$ & $1.99e+02$\\\hline
 	Proximal (ISTA) & $2.04e+00$ & $3.41e+01$ & $4.64e-03$ & $6.14e-01$ & $3.36e+02$\\\hline
 	Proximal (FISTA) & $1.80e+00$ & $2.00e+01$ & $1.86e-03$ & $2.33e-03$ & $1.99e+02$\\\hline
 	ADMM & $7.61e-01$ & $1.99e+01$ & $1.86e-03$ & $2.33e-03$ & $1.99e+02$\\\hline
 \multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.01}\\\cline{2-6}
- &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with $A$ in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
 Mosek & $1.11e+01$ & $2.00e+00$ & $1.86e-04$ & $2.33e-04$ & $2.00e+02$\\\hline
 Proximal (ISTA) & $2.02e+00$ & $4.49e+00$ & $5.11e-04$ & $7.94e-01$ & $4.49e+02$\\\hline
 Proximal (FISTA) & $1.89e+00$ & $2.00e+00$ & $2.84e-04$ & $7.54e-03$ & $2.00e+02$\\\hline
 ADMM & $8.40e-01$ & $2.00e+00$ & $1.86e-04$ & $2.33e-04$ & $2.00e+02$\\\hline
 \multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.001}\\\cline{2-6}
- &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with $A$ in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
 Mosek & $1.31e+01$ & $2.00e-01$ & $1.86e-05$ & $2.37e-05$ & $2.00e+02$\\\hline
 Proximal (ISTA) & $4.76e+00$ & $4.72e-01$ & $5.25e-05$ & $8.13e-01$ & $4.72e+02$\\\hline
 Proximal (FISTA) & $3.63e+00$ & $2.06e-01$ & $4.10e-05$ & $3.73e-02$ & $2.06e+02$\\\hline
@@ -389,19 +389,19 @@ ADMM & $2.89e+00$ & $2.00e-01$ & $2.99e-05$ & $1.49e-02$ & $2.00e+02$\\\hline
 		
 		\hline
 		\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.1}\\\cline{2-6}
-		 &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+		 &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with $A$ in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
 		Mosek & $7.81e+02$ & $2.05e+02$ & $6.82e-04$ & $8.66e-04$ & $2.05e+03$\\\hline
 		Proximal (ISTA) & $1.07e+01$ & $3.52e+02$ & $1.39e-03$ & $6.36e-01$ & $3.51e+03$\\\hline
 		Proximal (FISTA) & $1.51e+01$ & $2.05e+02$ & $6.82e-04$ & $8.66e-04$ & $2.05e+03$\\\hline
 		ADMM & $4.08e+00$ & $2.05e+02$ & $6.82e-04$ & $8.66e-04$ & $2.05e+03$\\\hline
-		\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$}\\\cline{2-6}
- &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+		\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=0.01$}\\\cline{2-6}
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with $A$ in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
 		Mosek & $8.59e+02$ & $2.05e+01$ & $6.83e-05$ & $8.72e-05$ & $2.05e+03$\\\hline
-Proximal (ISTA) & $2.33e+01$ & $2.05e+01$ & $7.62e-05$ & $8.75e-04$ & $2.05e+03$\\\hline
-Proximal (FISTA) & $1.25e+01$ & $3.76e+01$ & $1.41e-04$ & $6.92e-01$ & $3.76e+03$\\\hline
+Proximal (ISTA) & $2.33e+01$ & $2.62e+01$ & $7.62e-05$ & $8.81e-05$ & $2.12e+03$\\\hline
+Proximal (FISTA) & $1.25e+01$ & $2.05e+01$ & $6.85e-05$ & $8.92e-05$ & $2.05e+03$\\\hline
 ADMM & $3.29e+00$ & $2.05e+01$ & $6.82e-05$ & $8.67e-05$ & $2.05e+03$\\\hline
 \multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.001}\\\cline{2-6}
- &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with $A$ in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
 Mosek & $1.04e+03$ & $2.05e+00$ & $6.83e-06$ & $9.87e-06$ & $2.05e+03$\\\hline
 Proximal (ISTA) & $8.50e+00$ & $4.13e+00$ & $1.44e-05$ & $7.45e-01$ & $4.13e+03$\\\hline
 Proximal (FISTA) & $1.38e+01$ & $2.42e+00$ & $1.45e-05$ & $2.51e-01$ & $2.42e+03$\\\hline
@@ -410,7 +410,7 @@ ADMM & $5.23e+00$ & $2.42e+00$ & $1.32e-05$ & $2.57e-01$ & $2.42e+03$\\\hline
 		\caption{Numerical result on example 3 with different $\mu$\label{example3}}
 		\end{table}
 		
-We observe that among all these algorithms, ADMM performs the best, both in time and the recovery, while all of our proposed algorithms outperform the baseline Mosek many times except ISTA, which only finds an approximate solution in a very short time. Note that sometimes FISTA costs more time than ISTA, which is because ISTA gets its maximal number of iterations thus leaves an inaccurate solution. The results is consistent with our previous knowledge that ADMM truly has its superiorty, while FISTA has good acceleration and pertains the quality of solution compared with ISTA.
+We observe that among all these algorithms, ADMM performs the best, both in time and the recovery, while all of our proposed algorithms outperform the baseline Mosek many times except ISTA, which only finds an approximate solution in a very short time. Note that sometimes FISTA costs more time than ISTA, which is because ISTA gets its maximal number of iterations thus leaves an inaccurate solution. The results is consistent with our previous knowledge that ADMM truly has its superiorty, while FISTA has good acceleration and pertains the quality of solution compared with ISTA. Although in some large-scale problem such as example 3, it is exhaustive to get a accurate solution, ADMM still approximates the primitive matrix in $1/200$ time less than mosek.
 	
 %\nocite{*}
 \bibliographystyle{plain}  

@@ -1,0 +1,14 @@
+\begin{table}
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+
+\hline
+\multirow{2}{*}{ Algorithm} &\multicolumn{5}{c|}{$\mu=$0.1}\\\cline{2-6}
+ &CPU time &Opt value &Error with M in norm $\|\cdot\|_\F$ &Error with in norm $\|\cdot\|_\F$ &$\|x\|_\F$\\\hline
+Mosek & $1.67e+00$ & $1.19e+01$ & $5.43e-03$ & $1.58e-01$ & $1.19e+02$\\\hline
+ADMM & $2.51e-01$ & $1.19e+01$ & $5.47e-03$ & $1.73e-01$ & $1.19e+02$\\\hline
+ADMM linear time & $5.19e-01$ & $1.24e+01$ & $1.73e-02$ & $8.04e-02$ & $1.19e+02$\\\hline
+ADMM prototype & $3.02e-01$ & $1.19e+01$ & $5.83e-03$ & $1.42e-01$ & $1.19e+02$\\\hline
+\end{tabular}
+\caption{Numerical result on example 1 with different $\mu$\label{example1}}
+\end{table}

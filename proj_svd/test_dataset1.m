@@ -1,4 +1,3 @@
-%--------------------------------------------------------------------------
 % Compare prformance of algorithms on randomized SVD
 %
 % The following algorithms are available:
@@ -8,14 +7,7 @@
 % 
 % We test two algorithms with different parameters and compare their
 % performance
-%
-%--------------------------------------------------------------------------
-%
-% Author: Xiang Meng
-% Version 1.0
-% Last revision 2020.5
-%
-%--------------------------------------------------------------------------
+
 %% data prepatation
 
 % clc;

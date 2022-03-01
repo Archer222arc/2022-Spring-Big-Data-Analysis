@@ -24,35 +24,40 @@
 In this homework, we focus on the unconstrained optimization algorithm in which the objective function can be de formulated into the form
 \begin{equation}\label{prob}
 \begin{array}{cc}
-\min &L_\lambda(x,y)=\frac{1}{n}\sum_{i=1}^n f_i^(w)+\lambda\|w\|_1,
+\min &L_\lambda(x,y)=\frac{1}{n}\sum_{i=1}^n f_i^(w)+\lambda\|w\|_2^2,
 \end{array}
 \end{equation}
-where $f_i(w) = \log (1+\exp(-y^iw^\top x^i))$ and $\lambda > 0$. With a simple computation one can get
+% where $f_i(w) = \log (1+\exp(-y^iw^\top x^i))$ and $\lambda > 0$. With a simple computation one can get
+wherer $f_i(w) = 1-tanh(y^iw^\top x^i)$ and $\lambda >0$. With a simple computation we get
 \begin{equation}\label{grad}
-\nabla_w f_i(w) =\frac{\exp(-y^iw^\top x^i)}{1+\exp(-y^i z^\top x^i)}(-y^ix^i).
+	\nabla_w f_i(w) = -1+y^ix^i\tanh(y^iw^\top x^i)^2.
 \end{equation}
-The gradient $\nabla L_\lambda $ involves the sum of $n$ different terms, which makes the computation costly. As a result, several stochastic methods using the technique of sampling are widely used \cite[Section 8]{goodfellow2016deep}. In our experiments, we mainly focus on three of the first-order algorithms : Momentum, Adam and SGD with linesearch and show their efficiency.
+% \begin{equation}\label{grad}
+% \nabla_w f_i(w) =\frac{\exp(-y^iw^\top x^i)}{1+\exp(-y^i z^\top x^i)}(-y^ix^i).
+% \end{equation}
+The gradient $\nabla L_\lambda $ involves the sum of $n$ different terms, which makes the computation costly. As a result, several stochastic methods using the technique of sampling are widely used \cite[Section 8]{goodfellow2016deep}. In our experiments, we mainly focus on four of the first-order algorithms : Adagrad, Adam, SGD with momentum \& linesearch, RMSprop and show their efficiency. The first two are required and SGD with momentum \& linesearch, RMSprop are as extra credit.
 \section{Algorithm description}
-In this section, we introduce Momentum, Adam and SGD with linesearch, give the general frameworks.
-\subsection{The Momentum algorithm}
-Momentum algorithm is an modification of traditional gradient descent by utilizing the memory of updating directions in history to accelerate the convergence. We apply subgradient in the algorithm in the $\ell_1-$regularized problem since the norm is non-differentiable. The general framework of the Momentum algorithm is given in Algorithm \ref{alg:mom}.
+In this section, we introduce Adagrad, Adam, SGD with momentum, SGD with line search and RMSprop, and give the general frameworks.
+\subsection{Adagrad}
+Adagrad is one of the most famous algorithms in deep learning, named by adaptive gradient algorithm. It considers adding an accumulated second-order moment of gradient in order to accelerate the convergence. This scheme can adaptively adjust the gradient without fine tuning, which enjoys good performance on many problems \cite{goodfellow2016deep}. The framework of Adagrad is given in Algorithm \ref{adagrad}.
 \begin{algorithm}[H]
-\caption{The Momentum algorithm}
-\begin{algorithmic}[1]\label{alg:mom}
-\REQUIRE{Learning rate $lr$, momentum weight $mom$, batch size $bs$}
-\STATE{Set $k=0$}
-\WHILE{Do not converge}
-\STATE{Sample a minibatch set $B$ of size $bs$ from the training set}
-\STATE{Compute sampled gradient $g^k = \frac{1}{bs}\nabla_m\sum_{i\in B} f_i(w)+\lambda\partial\|w\|_1$}
-\STATE{Update momentum $\nu = mom * \nu + (1-\nu)g^k$}
-\STATE{Update $w^{k+1} = w^{k}-lr * \nu$}
-\STATE{$k=k+1$}
-\ENDWHILE
-\ENSURE{$w$}
-\end{algorithmic}
+	\caption{Adagrad}
+	\begin{algorithmic}[1]\label{adagrad}
+		\REQUIRE{Learning rate $lr$, regularization parameter $\delta$, batch size $bs$}
+		\STATE{Set $k=0$}
+		\STATE{Set $r=\vec 0$}
+		\WHILE{Do not converge}
+		\STATE{Sample a minibatch set B of size $bs$ from the training set}
+		\STATE{Compute sampled gradient $g^k = \frac{1}{bs}\nabla_w\sum_{i\in B}f_i(w)+2\lambda w$}
+		\STATE{Update $r=r+g^k\odot g^k$}
+		\STATE{Update $w^{k+1} = w^k-\frac{lr}{\sqrt{\delta+r}}*g^k$}
+		\STATE{$k=k+1$}
+		\ENDWHILE 
+	\ENSURE{$w^k$}
+	\end{algorithmic}
 \end{algorithm}
 \subsection{Adam}
-Adam is one of the benchmark algorithms in deep learning, which is named of adaptive moment estimation. It considers adding a second-order moment of gradient in order to accelerate the convergence. We use subgradient instead of gradient in the experiments for the same reason. The framework of Adam is stated in Algorithm \ref{alg:adam}.
+Adam is one of the benchmark algorithms in deep learning, which is named of adaptive moment estimation. It considers adding a second-order moment of gradient in order to accelerate the convergence. The framework of Adam is stated in Algorithm \ref{alg:adam}.
 \begin{algorithm}[H]
 \caption{Adam}
 \begin{algorithmic}[1]\label{alg:adam}
@@ -62,13 +67,31 @@ Adam is one of the benchmark algorithms in deep learning, which is named of adap
 \STATE{$k=k+1$}
 \STATE{$\beta_1^k = \beta_1^{k-1}*\beta_1,\beta_2^k = \beta_2^{k-1}*\beta_2$}
 \STATE{Sample a minibatch set $B$ of size $bs$ from the training set}
-\STATE{Compute sampled gradient $g^k = \frac{1}{bs}\nabla_m\sum_{i\in B} f_i(w)+\lambda\partial\|w\|_1$}
+\STATE{Compute sampled gradient $g^k = \frac{1}{bs}\nabla_m\sum_{i\in B} f_i(w)+2\lambda w^k$}
 \STATE{Compute the first moment $\nu=\beta_1\nu+(1-\beta_1)\nu$}
 \STATE{Compute the second moment $m = \beta_2 m+(1-\beta_2)m.\times m$}
 \STATE{Eliminate bias via $\hat \nu = \nu/(1-\beta_1^k)$}
 \STATE{Eliminate bias via $\hat m = m/(1-\beta_2^k)$}
 \STATE{Update $w^{k} = w^{k-1}-lr* \hat \nu / \sqrt{\hat m+\eps\mathbf{1}}$}
 \ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+\subsection{SGD with momentum}
+Momentum algorithm is an modification of traditional gradient descent by utilizing the memory of updating directions in history to accelerate the convergence. The general framework of the Momentum algorithm is given in Algorithm \ref{alg:mom}.
+\begin{algorithm}[H]
+\caption{SGD with momentum}
+\begin{algorithmic}[1]\label{alg:mom}
+\REQUIRE{Learning rate $lr$, momentum weight $mom$, batch size $bs$}
+\STATE{Set $k=0$}
+\STATE{Set $\nu=\vec 0$}
+\WHILE{Do not converge}
+\STATE{Sample a minibatch set $B$ of size $bs$ from the training set}
+\STATE{Compute sampled gradient $g^k = \frac{1}{bs}\nabla_m\sum_{i\in B} f_i(w)+2\lambda w$}
+\STATE{Update momentum $\nu = mom * \nu + (1-\nu)g^k$}
+\STATE{Update $w^{k+1} = w^{k}-lr * \nu$}
+\STATE{$k=k+1$}
+\ENDWHILE
+\ENSURE{$w^k$}
 \end{algorithmic}
 \end{algorithm}
 \subsection{SGD with linesearch}
@@ -80,7 +103,7 @@ Adam is one of the benchmark algorithms in deep learning, which is named of adap
 \STATE{Set $k=0$}
 \WHILE{Do not converge}
 \STATE{Sample a minibatch set $B$ of size $bs$ from the training set}
-\STATE{Compute sampled gradient $g^k = \frac{1}{bs}\nabla_m\sum_{i\in B} f_i(w)+\lambda\partial\|w\|_1$}
+\STATE{Compute sampled gradient $g^k = \frac{1}{bs}\nabla_m\sum_{i\in B} f_i(w)+2\lambda w$}
 \STATE{Set $i=0,lr' = lr$}
 \WHILE{$f(w-lr'g^k)\ge f(w)-lr'*\gamma\|g^k\|_2^2$ and $i < N$}
 \STATE{$lr' = lr' * \rho$}
@@ -89,14 +112,34 @@ Adam is one of the benchmark algorithms in deep learning, which is named of adap
 \STATE{$w^{k+1}=w^k-lr'g^k$}
 \STATE{$k=k+1$}
 \ENDWHILE
+\ENSURE{$w^k$}
 \end{algorithmic}
 \end{algorithm}
+\subsection{RMSprop}
+RMSprop is a modified version of Adagrad, named by root mean square prop. RMSprop uses the "mean square root" instead of the accumulating squre of gradient in order to prevent vanishing step size. The framework is given in Algorithm 
+\begin{algorithm}[H]
+	\caption{RMSprop}
+	\begin{algorithmic}[1]\label{RMSprop}
+		\REQUIRE{Learning rate $lr$, regularization parameter $\delta$, batch size $bs$, weight $0<\rho<1$}
+		\STATE{Set $k=0$}
+		\STATE{Set $r=\vec 0$}
+		\WHILE{Do not converge}
+		\STATE{Sample a minibatch set B of size $bs$ from the training set}
+		\STATE{Compute sampled gradient $g^k = \frac{1}{bs}\nabla_w\sum_{i\in B}f_i(w)+2\lambda w$}
+		\STATE{Update $r=\rho*r+(1-\rho)*g^k\odot g^k$}
+		\STATE{Update $w^{k+1} = w^k-\frac{lr}{\sqrt{\delta+r}}*g^k$}
+		\STATE{$k=k+1$}
+		\ENDWHILE 
+	\ENSURE{$w^k$}
+	\end{algorithmic}
+\end{algorithm}
 \section{Numerical experiments}
-In our numerical experiments, we test all three algorithms proposed above on two datasets MNIST and Covtype. For MNIST, the numbers are divided according to parity, while for Covtype we classify the 2nd class and others. More detailed descriptions of the datasets can be found in \cite{bollapragada2019exact}. For each traindata $(x_i,y_i)$, $x_i$ is normalized in $\ell_2$ norm. The regularization parameter $\lambda$ is chosen from the set $\{10,1,0.1,0.01\}$.
+% In our numerical experiments, we test all three algorithms proposed above on two datasets MNIST and Covtype. For MNIST, the numbers are divided according to parity, while for Covtype we classify the 2nd class and others. More detailed descriptions of the datasets can be found in \cite{bollapragada2019exact}. For each traindata $(x_i,y_i)$, $x_i$ is normalized in $\ell_2$ norm. The regularization parameter $\lambda$ is chosen from the set $\{10,1,0.1,0.01\}$.
+In our numerical experiments, we test all three algorithms proposed above on two datasets Covtype and Gisette. For Covtype we classify the 2nd class and others, while for Gisette we classify with label $-1$ and $1$. The dataset Covtype is splitted into train set and test set with ration $70\%$ and $30\%$, while the default split of Gisette is utilized. More detailed descriptions of the datasets can be found in \cite{bollapragada2019exact}. For  traindata $(x_i,y_i)$, $x_i$s are normalized in $\ell_2$ norm in each feature . The regularization parameter $\lambda$ is chosen from the set $\{10,1,0.1,0.01\}$.
 
-We tune our parameters by a simple grid search. The initial learning rate $lr$ is chosen to be $1e-3$ for Adam and Momentum, $1e-2$ for SGD with linesearch. The momentum parameter $mom$ is set to be $0.95$ for each. We choose $beta_1=\beta_2=0.999$ for Adam and safety gurantee $\epsilon=1e-5$. A maximal linesearch iterative number is shosen to be $N=5$ with acception parameter $\gamma=0.1$ and decay rate $\rho=0.5$. We train the instances for fixed epochs. The results are established as below.
+We tune our parameters by a simple grid search. The initial learning rate $lr$ is chosen to be $1e-3$ for Adam, Adagrad, RMSprop and SGD with momentum, $1e-2$ for SGD with linesearch. The momentum parameter $mom$ is set to be $0.95$ for each. We choose $\beta_1=\beta_2=0.999$ for Adam and safety gurantee $\epsilon=1e-5$. A maximal linesearch iterative number is shosen to be $N=5$ with acception parameter $\gamma=0.1$ and decay rate $\rho=0.5$. We train the instances for fixed epochs. The results are established as below.
 %\begin{figure}[H]
-%%	\subfigure[function value]{
+%%	\subfigure[training error]{
 %	\begin{minipage}{0.48\linewidth}
 %		\centering
 %		\includegraphics[width=1\linewidth]{./fig/fval_m1}
@@ -108,7 +151,7 @@ We tune our parameters by a simple grid search. The initial learning rate $lr$ i
 %		\includegraphics[width=1\linewidth]{./fig/gnorm_m1}
 %	\end{minipage}
 %%}
-%%\subfigure[classification error]{
+%%\subfigure[Testing error]{
 %\begin{minipage}{0.48\linewidth}
 %	\centering
 %	\includegraphics[width=1\linewidth]{./fig/err_m1}
@@ -117,82 +160,10 @@ We tune our parameters by a simple grid search. The initial learning rate $lr$ i
 %\caption{Results on MNIST when $\lambda=10$
 %\end{figure}
 \begin{figure}[H]
-		\begin{minipage}{0.33\linewidth}
-			\centering
-			\includegraphics[width=1\linewidth]{./fig/fval_m1}
-			\caption{function value}
-		\end{minipage}
-		\begin{minipage}{0.33\linewidth}
-			\centering
-			\includegraphics[width=1\linewidth]{./fig/gnorm_m1}
-			\caption{gradient norm}
-		\end{minipage}
-		\begin{minipage}{0.33\linewidth}
-			\centering
-			\includegraphics[width=1\linewidth]{./fig/err_m1}
-			\caption{classification error}
-		\end{minipage}
-	\caption*{Results on MNIST when $\lambda=10$}
-	\end{figure}
-\begin{figure}[H]
-	\begin{minipage}{0.33\linewidth}
-		\centering
-		\includegraphics[width=1\linewidth]{./fig/fval_m2}
-		\caption{function value}
-	\end{minipage}
-	\begin{minipage}{0.33\linewidth}
-		\centering
-		\includegraphics[width=1\linewidth]{./fig/gnorm_m2}
-		\caption{gradient norm}
-	\end{minipage}
-	\begin{minipage}{0.33\linewidth}
-		\centering
-		\includegraphics[width=1\linewidth]{./fig/err_m2}
-		\caption{classification error}
-	\end{minipage}
-	\caption*{Results on MNIST when $\lambda=1$}
-\end{figure}
-\begin{figure}[H]
-	\begin{minipage}{0.33\linewidth}
-		\centering
-		\includegraphics[width=1\linewidth]{./fig/fval_m3}
-		\caption{function value}
-	\end{minipage}
-	\begin{minipage}{0.33\linewidth}
-		\centering
-		\includegraphics[width=1\linewidth]{./fig/gnorm_m3}
-		\caption{gradient norm}
-	\end{minipage}
-	\begin{minipage}{0.33\linewidth}
-		\centering
-		\includegraphics[width=1\linewidth]{./fig/err_m3}
-		\caption{classification error}
-	\end{minipage}
-	\caption*{Results on MNIST when $\lambda=0.1$}
-\end{figure}
-\begin{figure}[H]
-	\begin{minipage}{0.33\linewidth}
-		\centering
-		\includegraphics[width=1\linewidth]{./fig/fval_m4}
-		\caption{function value}
-	\end{minipage}
-	\begin{minipage}{0.33\linewidth}
-		\centering
-		\includegraphics[width=1\linewidth]{./fig/gnorm_m4}
-		\caption{gradient norm}
-	\end{minipage}
-	\begin{minipage}{0.33\linewidth}
-		\centering
-		\includegraphics[width=1\linewidth]{./fig/err_m4}
-		\caption{classification error}
-	\end{minipage}
-	\caption*{Results on MNIST when $\lambda=0.01$}
-\end{figure}
-\begin{figure}[H]
 	\begin{minipage}{0.33\linewidth}
 		\centering
 		\includegraphics[width=1\linewidth]{./fig/fval_c1}
-		\caption{function value}
+		\caption{Training errer}
 	\end{minipage}
 	\begin{minipage}{0.33\linewidth}
 		\centering
@@ -202,7 +173,7 @@ We tune our parameters by a simple grid search. The initial learning rate $lr$ i
 	\begin{minipage}{0.33\linewidth}
 		\centering
 		\includegraphics[width=1\linewidth]{./fig/err_c1}
-		\caption{classification error}
+		\caption{Testing error}
 	\end{minipage}
 	\caption*{Results on Covtype when $\lambda=10$}
 \end{figure}
@@ -210,7 +181,7 @@ We tune our parameters by a simple grid search. The initial learning rate $lr$ i
 	\begin{minipage}{0.33\linewidth}
 		\centering
 		\includegraphics[width=1\linewidth]{./fig/fval_c2}
-		\caption{function value}
+		\caption{Training errer}
 	\end{minipage}
 	\begin{minipage}{0.33\linewidth}
 		\centering
@@ -220,7 +191,7 @@ We tune our parameters by a simple grid search. The initial learning rate $lr$ i
 	\begin{minipage}{0.33\linewidth}
 		\centering
 		\includegraphics[width=1\linewidth]{./fig/err_c2}
-		\caption{classification error}
+		\caption{Testing error}
 	\end{minipage}
 	\caption*{Results on Covtype when $\lambda=1$}
 \end{figure}
@@ -228,7 +199,7 @@ We tune our parameters by a simple grid search. The initial learning rate $lr$ i
 	\begin{minipage}{0.33\linewidth}
 		\centering
 		\includegraphics[width=1\linewidth]{./fig/fval_c3}
-		\caption{function value}
+		\caption{Training errer}
 	\end{minipage}
 	\begin{minipage}{0.33\linewidth}
 		\centering
@@ -238,7 +209,7 @@ We tune our parameters by a simple grid search. The initial learning rate $lr$ i
 	\begin{minipage}{0.33\linewidth}
 		\centering
 		\includegraphics[width=1\linewidth]{./fig/err_c3}
-		\caption{classification error}
+		\caption{Testing error}
 	\end{minipage}
 	\caption*{Results on Covtype when $\lambda=0.1$}
 \end{figure}
@@ -246,7 +217,7 @@ We tune our parameters by a simple grid search. The initial learning rate $lr$ i
 	\begin{minipage}{0.33\linewidth}
 		\centering
 		\includegraphics[width=1\linewidth]{./fig/fval_c4}
-		\caption{function value}
+		\caption{Training errer}
 	\end{minipage}
 	\begin{minipage}{0.33\linewidth}
 		\centering
@@ -256,11 +227,83 @@ We tune our parameters by a simple grid search. The initial learning rate $lr$ i
 	\begin{minipage}{0.33\linewidth}
 		\centering
 		\includegraphics[width=1\linewidth]{./fig/err_c4}
-		\caption{classification error}
+		\caption{Testing error}
 	\end{minipage}
 	\caption*{Results on Covtype when $\lambda=0.01$}
 \end{figure}
-Here in the gradient norm, we omit the $\ell_1$ regularized part since it dominates when $\lambda$ is large. We see all the three algorithms perform well on the datasets, yielding a relatively high quality solution within only a few epochs. A significant influence of regularization term is shown and the three algorithms have different performance in term of different standards. We observe that Adam outperforms the others in both function value and classification error, which is consistent with our intuition that Adam utilizes a kind of self-adaptive stepsize on each component for acceleration. No wonder Adam is so widely used in deep learning. On the other hand, the SGD with linesearch converges faster in primal gradient norm and classification error than the Momentum algorithm. This indicates its competitive stability and ability of restoration in the theoretical base of convergence analysis, as well as easy implementation. The faster convergence of the Momentum in function value (with regularization term) compared to SGD with linesearch shows the superiority of momentum in preserving the descent direction, since we did not add a momentum term to SGD with linesearch. In this kind of median-size problems, these algorithms show a fast convergence. We leave further discussion of second-order algorithms in the future due to space limitation. Anyway, we have completed all requirements including extra-credits in this assignment.
+\begin{figure}[H]
+	\begin{minipage}{0.33\linewidth}
+		\centering
+		\includegraphics[width=1\linewidth]{./fig/fval_g1}
+		\caption{Training errer}
+	\end{minipage}
+	\begin{minipage}{0.33\linewidth}
+		\centering
+		\includegraphics[width=1\linewidth]{./fig/gnorm_g1}
+		\caption{gradient norm}
+	\end{minipage}
+	\begin{minipage}{0.33\linewidth}
+		\centering
+		\includegraphics[width=1\linewidth]{./fig/err_g1}
+		\caption{Testing error}
+	\end{minipage}
+\caption*{Results on Gisette when $\lambda=10$}
+\end{figure}
+\begin{figure}[H]
+\begin{minipage}{0.33\linewidth}
+	\centering
+	\includegraphics[width=1\linewidth]{./fig/fval_g2}
+	\caption{Training errer}
+\end{minipage}
+\begin{minipage}{0.33\linewidth}
+	\centering
+	\includegraphics[width=1\linewidth]{./fig/gnorm_g2}
+	\caption{gradient norm}
+\end{minipage}
+\begin{minipage}{0.33\linewidth}
+	\centering
+	\includegraphics[width=1\linewidth]{./fig/err_g2}
+	\caption{Testing error}
+\end{minipage}
+\caption*{Results on Gisette when $\lambda=1$}
+\end{figure}
+\begin{figure}[H]
+\begin{minipage}{0.33\linewidth}
+	\centering
+	\includegraphics[width=1\linewidth]{./fig/fval_g3}
+	\caption{Training errer}
+\end{minipage}
+\begin{minipage}{0.33\linewidth}
+	\centering
+	\includegraphics[width=1\linewidth]{./fig/gnorm_g3}
+	\caption{gradient norm}
+\end{minipage}
+\begin{minipage}{0.33\linewidth}
+	\centering
+	\includegraphics[width=1\linewidth]{./fig/err_g3}
+	\caption{Testing error}
+\end{minipage}
+\caption*{Results on Gisette when $\lambda=0.1$}
+\end{figure}
+\begin{figure}[H]
+\begin{minipage}{0.33\linewidth}
+	\centering
+	\includegraphics[width=1\linewidth]{./fig/fval_g4}
+	\caption{Training errer}
+\end{minipage}
+\begin{minipage}{0.33\linewidth}
+	\centering
+	\includegraphics[width=1\linewidth]{./fig/gnorm_g4}
+	\caption{gradient norm}
+\end{minipage}
+\begin{minipage}{0.33\linewidth}
+	\centering
+	\includegraphics[width=1\linewidth]{./fig/err_g4}
+	\caption{Testing error}
+\end{minipage}
+\caption*{Results on Gisette when $\lambda=0.01$}
+\end{figure}
+Here in the gradient norm, we omit the $\ell_1$ regularized part since it dominates when $\lambda$ is large. We see all the three algorithms perform well on the datasets, yielding a relatively high quality solution within only a few epochs. A significant influence of regularization term is shown and the three algorithms have different performance in term of different standards. We observe that Adam and RMSprop outperforms the others in both training error and testing error, which is consistent with our intuition that Adam and RMSprop utilize a kind of self-adaptive stepsize on each component for acceleration. No wonder Adam and RMSprop are so widely used in deep learning. Additionally, Adagrad also behaves well. On the other hand, the SGD with linesearch converges faster in primal gradient norm and testing error than the momentum algorithm in the first dataset. This indicates its competitive stability and ability of restoration in the theoretical base of convergence analysis, as well as easy implementation. The faster convergence of the momentum in training error (with regularization term) compared to SGD with linesearch shows the superiority of momentum in preserving the descent direction, since we did not add a momentum term to SGD with linesearch. In this kind of median-size problems, these algorithms show a fast convergence. We leave further discussion of second-order algorithms in the future due to space limitation. Anyway, we have completed all requirements including extra-credits in this assignment.
 %\nocite{*}
 \bibliographystyle{plain}  
 \bibliography{ref}

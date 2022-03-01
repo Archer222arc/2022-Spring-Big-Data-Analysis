@@ -33,9 +33,10 @@ if ~isfield(opts,'maxiter');          opts.maxiter = 3e6; end
 if ~isfield(opts,'bsize');            opts.bsize = 1; end
 if ~isfield(opts,'print');            opts.print = 1; end
 if ~isfield(opts,'verbose');          opts.verbose = 1e4; end
-if ~isfield(opts,'decay_rate');       opts.decay_rate = 0.5; end
+if ~isfield(opts,'decay_rate');       opts.decay_rate = 0.8; end
 
 f = func.f;                g = func.g;                testfunc = func.testfunc;
+n = func.n;
 beta1 = opts.beta1;              beta2 = opts.beta2;            bsize = opts.bsize;
 eps = opts.eps;            verbose = opts.print;          lr = opts.step;
 verbose = opts.verbose;    maxiter = opts.maxiter;    
@@ -43,7 +44,7 @@ decay_rate = opts.decay_rate;
 
 stra1 = ['%9s','%14s','%15s','%15s','\n'];
 str_head = sprintf(stra1, ...
-    'iter','f','error','g norm');
+    'iter','train loss','test loss','g norm');
 str_num = '%8d    %+5.4e    %+5.4e    %+5.4e\n';
 
 m = length(x0);
@@ -53,10 +54,10 @@ Eg2 = zeros(m,1);
 Eg = zeros(m,1);
 exp_beta1 = 1;
 exp_beta2 = 1;
-t = randperm(m,bsize);
+t = randperm(n,bsize);
 % t = 1:bsize;
-fval = f(x);
-err_out = testfunc(x);
+err_train = f(x);
+err_test = testfunc(x);
 gval = norm(g(x,1:n));
 tic;
 
@@ -83,13 +84,13 @@ while(iter<maxiter)
             fprintf("%s",str_head);
         end
         lr = lr*decay_rate;
-        fobj = f(x);
-        err = testfunc(x);
+        e_train = f(x);
+        e_test = testfunc(x);
         gnorm = norm(g(x,1:n)-func.lambda*sign(x));
-        fval = [fval,fobj]; 
-        err_out = [err_out,err];
+        err_train = [err_train,e_train];
+        err_test = [err_test,e_test];
         gval = [gval,gnorm];
-        fprintf(str_num,iter,fobj,err,gnorm);
+        fprintf(str_num,iter,e_train,e_test,gnorm);
     end
 end
 
@@ -97,8 +98,9 @@ end
 
 out.time = toc;
 out.iter = iter;
-out.f = fval;
-out.err = err_out;
+% out.f = fval;
+out.err_test = err_test;
+out.err_train = err_train;
 out.g = gval;
 
 end
